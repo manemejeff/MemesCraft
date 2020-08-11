@@ -4,7 +4,7 @@ from telegram.utils.request import Request
 
 from settings.settings import TEST_TOKEN
 from settings.settings import TG_API_PROXY
-from .handlers import message_handler
+from bot.handlers import message_handler
 
 
 
