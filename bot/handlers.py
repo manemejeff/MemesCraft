@@ -103,7 +103,7 @@ def start_handler(update: Update, context: CallbackContext):
     context.user_data['stage'] = 0
 
     update.message.reply_text(
-        text="Welcome to the bot.",
+        text="Welcome to main menu of MemesCraft bot.",
         reply_markup=MRK_START
     )
 
@@ -112,9 +112,7 @@ def button_help_handler(update: Update, context: CallbackContext):
     context.user_data['stage'] = 0
 
     update.message.reply_text(
-        text="Bratishka izvini chto translitom, no mne vpadlu perekluchat/"
-             "karoche tut viberaesh mem i pishesh nadpis na nego/"
-             "vse legko - glavnoe ne oblazhatsya",
+        text="Choose images from the list, then add captions.\nType /home in any unknown situation, to go to main menu.",
         reply_markup=MRK_START
     )
 
@@ -139,7 +137,7 @@ def choose_meme_handler(update: Update, context: CallbackContext):
     context.user_data['stage'] = 1
 
     update.message.reply_text(
-        text="Now choose your meme by the name",
+        text=f"Choose your meme\nYou are currently on page {context.user_data['page']}/25",
         reply_markup=MRK_MEMES_LIST
     )
 
@@ -156,13 +154,13 @@ def other_page_handler(update: Update, context: CallbackContext):
     )
 
     update.message.reply_text(
-        text="Now choose your meme by the name",
+        text=f"Choose your meme\nYou are currently on page {context.user_data['page']}/25",
         reply_markup=MRK_MEMES_LIST
     )
 def get_text_handler(update: Update, context: CallbackContext):
     # context.user_data['stage'] = 3
     update.message.reply_text(
-        text=f"Enter text for your meme {context.user_data['box_current']}/{context.user_data['box_count']}",
+        text=f"Enter text {context.user_data['box_current']}/{context.user_data['box_count']}\nYou can leave caption blank with /empty command.",
         reply_markup=MRK_HOME
     )
 
