@@ -14,6 +14,7 @@ btn_confirm = '/confirm'
 btn_yes = '/yes'
 btn_no = '/no'
 btn_ok = '/ok'
+btn_empty = '/empty'
 
 # KEYBOARDS ---------------------------------------------------
 KB_START = [
@@ -24,6 +25,9 @@ KB_START = [
 ]
 
 KB_HOME = [
+    [
+        KeyboardButton(text=btn_empty),
+    ],
     [
         KeyboardButton(text=btn_home),
         KeyboardButton(text=btn_back),
@@ -82,8 +86,15 @@ def create_kb(memes_list, page):
         [
             KeyboardButton(text=btn_prev_page),
             KeyboardButton(text=btn_next_page),
+        ],
+        [
+            KeyboardButton(text=btn_home),
         ]
     ]
+    if page == 1:
+        del keyboard[2][0]
+    elif page == 25:
+        del keyboard[2][1]
     return keyboard
 
 
@@ -148,23 +159,28 @@ def other_page_handler(update: Update, context: CallbackContext):
         text="Now choose your meme by the name",
         reply_markup=MRK_MEMES_LIST
     )
-def get_text0_handler(update: Update, context: CallbackContext):
+def get_text_handler(update: Update, context: CallbackContext):
     # context.user_data['stage'] = 3
     update.message.reply_text(
-        text="Enter first line of text for your meme",
+        text=f"Enter text for your meme {context.user_data['box_current']}/{context.user_data['box_count']}",
         reply_markup=MRK_HOME
     )
 
-def get_text1_handler(update: Update, context: CallbackContext):
-    update.message.reply_text(
-        text="Add second line of text for meme",
-        reply_markup=MRK_HOME
-    )
+# def get_text1_handler(update: Update, context: CallbackContext):
+#     update.message.reply_text(
+#         text="Add second line of text for meme",
+#         reply_markup=MRK_HOME
+#     )
 
 def confirm_meme_handler(update: Update, context: CallbackContext):
     # context.user_data['stage'] += 1
+    txt = f"name: {context.user_data['name']}"
+    i = 1
+    while i <= context.user_data['box_count']:
+        txt = txt + f'\ntext{i}: {context.user_data["boxes"][i-1]}'
+        i += 1
     update.message.reply_text(
-        text=f"name: {context.user_data['name']}\ntext1: {context.user_data['text0']}\ntext2: {context.user_data['text1']}\nConfirm?",
+        text=txt + "\nConfirm?",
         reply_markup=MRK_CONFIRM
     )
 
@@ -172,8 +188,7 @@ def craft_meme_handler(update: Update, context: CallbackContext):
     # context.user_data['stage'] = 7
     url = craft_meme(
         id=context.user_data['id'],
-        text0=context.user_data['text0'],
-        text1=context.user_data['text1']
+        text=context.user_data['boxes'],
     )
     update.message.reply_text(
         text=url,
@@ -185,13 +200,15 @@ def craft_meme_handler(update: Update, context: CallbackContext):
 @log_error
 def message_handler(update: Update, context: CallbackContext):
     text = update.message.text
-    print(context.user_data)
     stage = context.user_data.setdefault('stage', 0)
     page = context.user_data.setdefault('page', 1)
     id = context.user_data.setdefault('id', None)
     name = context.user_data.setdefault('name', None)
-    text0 = context.user_data.setdefault('text0', None)
-    text1 = context.user_data.setdefault('text1', None)
+    boxes = context.user_data.setdefault('boxes', [])
+    box_count = context.user_data.setdefault('box_count', None)
+    box_current = context.user_data.setdefault('box_current', 1)
+
+    print(context.user_data)
 
     if text == btn_home:
         context.user_data.clear()
@@ -216,33 +233,37 @@ def message_handler(update: Update, context: CallbackContext):
             for i in context.user_data['memes_list']:
                 if text == i['name']:
                     context.user_data['id'] = i['id']
+                    context.user_data['box_count'] = i['box_count']
                     context.user_data['name'] = text
                     context.user_data['stage'] = 2
-                    print(i['id'])
-                    return get_text0_handler(update, context)
+                    return get_text_handler(update, context)
 
     if stage == 2:
-        if text == btn_back:
-            return choose_meme_handler(update, context)
-        else:
-            context.user_data['text0'] = text
-            context.user_data['stage'] = 3
-            return get_text1_handler(update, context)
+        while box_current <= box_count:
+            if text == btn_back:
+                context.user_data['box_current'] = 1
+                return choose_meme_handler(update, context)
+            elif text == btn_empty:
+                context.user_data['boxes'].append('')
+            else:
+                context.user_data['boxes'].append(text)
+
+            if box_current == box_count:
+                break
+
+            context.user_data['box_current'] += 1
+            return get_text_handler(update, context)
+
+        context.user_data['stage'] = 3
+        return confirm_meme_handler(update, context)
 
     if stage == 3:
-        if text == btn_back:
-            return choose_meme_handler(update, context)
-        else:
-            context.user_data['text1'] = text
-            context.user_data['stage'] = 4
-            return confirm_meme_handler(update, context)
-
-    if stage == 4:
         if text == btn_yes:
-            context.user_data['stage'] = 5
+            context.user_data['stage'] = 4
             return craft_meme_handler(update, context)
         elif text == btn_no:
             return choose_meme_handler(update, context)
 
-    if stage == 5:
+    if stage == 4:
+        context.user_data.clear()
         return start_handler(update, context)
