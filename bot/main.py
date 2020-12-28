@@ -1,10 +1,10 @@
 from telegram import Bot
-from telegram.ext import Updater, Filters, MessageHandler
+from telegram.ext import Updater, Filters, MessageHandler, CallbackQueryHandler
 from telegram.utils.request import Request
 
 from settings.settings import TEST_TOKEN
 from settings.settings import TG_API_PROXY
-from bot.handlers import message_handler
+from bot.handlers import message_handler, callback_handler
 
 
 
@@ -21,6 +21,7 @@ def main():
     print(updater.bot.get_me())
 
     updater.dispatcher.add_handler(MessageHandler(filters=Filters.all, callback=message_handler))
+    updater.dispatcher.add_handler(CallbackQueryHandler(callback_handler))
 
     updater.start_polling()
     updater.idle()

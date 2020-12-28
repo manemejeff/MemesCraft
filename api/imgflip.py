@@ -8,6 +8,7 @@ from settings.settings import IMGFLIP_USER, IMGFLIP_PWD
 def get_memes():
     get_memes_url = 'https://api.imgflip.com/get_memes'
     resp = requests.get(get_memes_url).json()
+    print(resp)
     if resp['success']:
         return resp
 
