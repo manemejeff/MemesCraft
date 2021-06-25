@@ -69,7 +69,6 @@ MRK_OK = ReplyKeyboardMarkup(
 )
 
 
-
 # FUNCTIONS ---------------------------------------------------
 def create_inline_kb(memes_list):
     kb = []
@@ -78,34 +77,6 @@ def create_inline_kb(memes_list):
             InlineKeyboardButton(text=memes_list[i]['name'], callback_data=memes_list[i]['id'])
         ])
     return InlineKeyboardMarkup(kb)
-
-
-def create_kb(memes_list, page):
-
-    items = page * 4
-
-    keyboard = [
-        [
-            KeyboardButton(text=memes_list[items - 4]['name']),
-            KeyboardButton(text=memes_list[items - 3]['name']),
-        ],
-        [
-            KeyboardButton(text=memes_list[items - 2]['name']),
-            KeyboardButton(text=memes_list[items - 1]['name']),
-        ],
-        [
-            KeyboardButton(text=btn_prev_page),
-            KeyboardButton(text=btn_next_page),
-        ],
-        [
-            KeyboardButton(text=btn_home),
-        ]
-    ]
-    if page == 1:
-        del keyboard[2][0]
-    elif page == 25:
-        del keyboard[2][1]
-    return keyboard
 
 
 # HANDLERS ----------------------------------------------------
@@ -146,34 +117,25 @@ def choose_meme_handler(update: Update, context: CallbackContext):
         reply_markup=keyboard
     )
 
-def other_page_handler(update: Update, context: CallbackContext):
-    keyboard = create_kb(context.user_data['memes_list'], context.user_data['page'])
 
-    MRK_MEMES_LIST = ReplyKeyboardMarkup(
-        keyboard=keyboard,
-        resize_keyboard=True,
-    )
-
-    update.message.reply_text(
-        text=f"Choose your meme\nYou are currently on page {context.user_data['page']}/25",
-        reply_markup=MRK_MEMES_LIST
-    )
 def get_text_handler(update: Update, context: CallbackContext):
     update.effective_message.reply_text(
         text=f"Enter text {context.user_data['box_current']}/{context.user_data['box_count']}\nYou can leave caption blank with /empty command.",
         reply_markup=MRK_HOME
     )
 
+
 def confirm_meme_handler(update: Update, context: CallbackContext):
     txt = f"name: {context.user_data['name']}"
     i = 1
     while i <= context.user_data['box_count']:
-        txt = txt + f'\ntext{i}: {context.user_data["boxes"][i-1]}'
+        txt = txt + f'\ntext{i}: {context.user_data["boxes"][i - 1]}'
         i += 1
     update.message.reply_text(
         text=txt + "\nConfirm?",
         reply_markup=MRK_CONFIRM
     )
+
 
 def craft_meme_handler(update: Update, context: CallbackContext):
     url = craft_meme(
@@ -184,6 +146,7 @@ def craft_meme_handler(update: Update, context: CallbackContext):
         text=url,
         reply_markup=MRK_OK
     )
+
 
 def callback_handler(update: Update, context: CallbackContext):
     callback_data = update.callback_query.data
@@ -198,6 +161,8 @@ def callback_handler(update: Update, context: CallbackContext):
                 parse_mode=ParseMode.MARKDOWN
             )
             return get_text_handler(update=update, context=context)
+
+
 # MAIN HANDLER ------------------------------------------------
 @log_error
 def message_handler(update: Update, context: CallbackContext):
@@ -223,22 +188,6 @@ def message_handler(update: Update, context: CallbackContext):
             return button_help_handler(update, context)
         elif text == btn_start:
             return choose_meme_handler(update, context)
-
-    # if stage == 1:
-    #     if text == btn_next_page:
-    #         context.user_data['page'] += 1
-    #         return other_page_handler(update, context)
-    #     elif text == btn_prev_page:
-    #         context.user_data['page'] -= 1
-    #         return other_page_handler(update, context)
-    #     else:
-    #         for i in context.user_data['memes_list']:
-    #             if text == i['name']:
-    #                 context.user_data['id'] = i['id']
-    #                 context.user_data['box_count'] = i['box_count']
-    #                 context.user_data['name'] = text
-    #                 context.user_data['stage'] = 2
-    #                 return get_text_handler(update, context)
 
     if stage == 2:
         while box_current <= box_count:

@@ -18,7 +18,6 @@ def main():
         base_url=TG_API_PROXY
     )
     updater = Updater(bot=bot, use_context=True)
-    print(updater.bot.get_me())
 
     updater.dispatcher.add_handler(MessageHandler(filters=Filters.all, callback=message_handler))
     updater.dispatcher.add_handler(CallbackQueryHandler(callback_handler))
