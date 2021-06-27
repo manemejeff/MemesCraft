@@ -1,7 +1,7 @@
 from telegram import Update, ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButton, ParseMode
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CallbackContext, CallbackQueryHandler
-from api.imgflip import get_memes, craft_meme
+from api.imgflip import get_memes, craft_meme, get_demo_meme
 from .loger import log_error
 
 # BUTTONS -----------------------------------------------------
@@ -160,6 +160,12 @@ def callback_handler(update: Update, context: CallbackContext):
                 text=update.effective_message.text,
                 parse_mode=ParseMode.MARKDOWN
             )
+            update.effective_message.reply_text(
+                text=get_demo_meme(
+                    meme_id=context.user_data['id'],
+                    box_count=context.user_data['box_count']
+                )
+            )
             return get_text_handler(update=update, context=context)
 
 
@@ -174,8 +180,6 @@ def message_handler(update: Update, context: CallbackContext):
     boxes = context.user_data.setdefault('boxes', [])
     box_count = context.user_data.setdefault('box_count', None)
     box_current = context.user_data.setdefault('box_current', 1)
-
-    print(context.user_data)
 
     if text == btn_home:
         context.user_data.clear()

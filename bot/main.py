@@ -15,7 +15,7 @@ def main():
     bot = Bot(
         request=req,
         token=TEST_TOKEN,
-        base_url=TG_API_PROXY
+        # base_url=TG_API_PROXY
     )
     updater = Updater(bot=bot, use_context=True)
 
